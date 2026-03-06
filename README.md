@@ -1,59 +1,133 @@
-# WorkOrderApp
+# Work Order Timeline Dashboard
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.0.
+A frontend scheduling dashboard built with **Angular** for managing production work orders across multiple work centers.  
+The application visualizes orders on an interactive timeline and allows users to create, edit, and delete work orders while preventing scheduling conflicts.
 
-## Development server
+---
 
-To start a local development server, run:
+# Features
+
+- Interactive **timeline-based scheduling**
+- **Day / Week / Month zoom levels**
+- **Create, edit, and delete work orders**
+- **Overlap validation** for orders within the same work center
+- **Color-coded order status**
+- **Sticky work center sidebar**
+- **Horizontal timeline scrolling**
+- **Responsive layout**
+- **Reactive forms for order management**
+
+---
+
+# Tech Stack
+
+- **Angular**
+- **TypeScript**
+- **Reactive Forms**
+- **RxJS**
+- **CSS Grid + Flexbox**
+
+---
+
+# How It Works
+
+Each work center is displayed as a row in the timeline.
+
+Work orders are rendered as bars whose position and width are calculated based on their start and end dates.
+
+```
+left = (startDate - timelineStart) * pixelsPerDay
+width = (endDate - startDate) * pixelsPerDay
+```
+
+This allows the timeline to dynamically scale depending on the selected zoom level.
+
+The application supports:
+
+- Day view
+- Week view
+- Month view
+
+---
+
+# Overlap Validation
+
+When creating or editing an order, the application checks if another order already exists on the same work center during the same time range.
+
+If an overlap occurs, the operation is rejected and an error message is displayed.
+
+---
+
+# Project Structure
+
+```
+src/app/
+
+components/
+  timeline/
+    timeline.ts
+    timeline.html
+    timeline.scss
+
+  order-panel/
+    order-panel.ts
+    order-panel.html
+    order-panel.scss
+
+services/
+  data.ts
+
+models/
+  docs.ts
+```
+
+---
+
+# Installation
+
+Clone the repository and install dependencies.
+
+```bash
+npm install
+```
+
+Start the development server.
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Open the application in your browser.
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
+```
+http://localhost:4200
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+---
 
-```bash
-ng generate --help
-```
+# Usage
 
-## Building
+Users can:
 
-To build the project run:
+- Click a **timeline cell** to create a new work order
+- Click an **existing order bar** to edit it
+- Change **zoom levels** using the timeline controls
+- Delete orders using the edit panel
 
-```bash
-ng build
-```
+---
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+# Demo
 
-## Running unit tests
+A Loom video demonstration accompanies this submission and showcases:
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+- Timeline navigation
+- Order creation
+- Editing and deleting orders
+- Overlap validation
+- Zoom functionality
 
-```bash
-ng test
-```
+---
 
-## Running end-to-end tests
+# Author
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Ishan Rajvi

@@ -1,0 +1,251 @@
+import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+import { WorkCenterDocument, WorkOrderDocument } from '../models/docs';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class DataService {
+  private workCenters: WorkCenterDocument[] = [
+    { docId: 'wc1', docType: 'workCenter', data: { name: 'Extrusion Line A' } },
+    { docId: 'wc2', docType: 'workCenter', data: { name: 'CNC Machine 1' } },
+    { docId: 'wc3', docType: 'workCenter', data: { name: 'Assembly Station' } },
+    { docId: 'wc4', docType: 'workCenter', data: { name: 'Quality Control' } },
+    { docId: 'wc5', docType: 'workCenter', data: { name: 'Packaging Line' } },
+  ];
+
+  private initialOrders: WorkOrderDocument[] = [
+  {
+    docId: 'wo1',
+    docType: 'workOrder',
+    data: {
+      name: 'Order #101',
+      workCenterId: 'wc1',
+      status: 'complete',
+      startDate: '2026-02-22',
+      endDate: '2026-02-26',
+    },
+  },
+  {
+    docId: 'wo2',
+    docType: 'workOrder',
+    data: {
+      name: 'Order #102',
+      workCenterId: 'wc1',
+      status: 'open',
+      startDate: '2026-02-28',
+      endDate: '2026-03-06',
+    },
+  },
+  {
+    docId: 'wo3',
+    docType: 'workOrder',
+    data: {
+      name: 'Order #103',
+      workCenterId: 'wc2',
+      status: 'in-progress',
+      startDate: '2026-03-01',
+      endDate: '2026-03-06',
+    },
+  },
+  {
+    docId: 'wo4',
+    docType: 'workOrder',
+    data: {
+      name: 'Order #104',
+      workCenterId: 'wc3',
+      status: 'blocked',
+      startDate: '2026-02-20',
+      endDate: '2026-02-24',
+    },
+  },
+  {
+    docId: 'wo5',
+    docType: 'workOrder',
+    data: {
+      name: 'Order #105',
+      workCenterId: 'wc3',
+      status: 'open',
+      startDate: '2026-02-26',
+      endDate: '2026-03-03',
+    },
+  },
+  {
+    docId: 'wo6',
+    docType: 'workOrder',
+    data: {
+      name: 'Order #106',
+      workCenterId: 'wc4',
+      status: 'complete',
+      startDate: '2026-03-03',
+      endDate: '2026-03-07',
+    },
+  },
+  {
+    docId: 'wo7',
+    docType: 'workOrder',
+    data: {
+      name: 'Order #107',
+      workCenterId: 'wc5',
+      status: 'in-progress',
+      startDate: '2026-02-24',
+      endDate: '2026-03-10',
+    },
+  },
+{
+  docId: 'wo8',
+  docType: 'workOrder',
+  data: {
+    name: 'Order #108',
+    workCenterId: 'wc2',
+    status: 'open',
+    startDate: '2026-03-07',
+    endDate: '2026-03-10',
+  },
+},
+];
+
+private ordersSubject = new BehaviorSubject<WorkOrderDocument[]>([...this.initialOrders]);
+
+workOrders$ = this.ordersSubject.asObservable();
+
+  getWorkCenters(): WorkCenterDocument[] {
+    return this.workCenters;
+  }
+
+  getCurrentOrders(): WorkOrderDocument[] {
+    return this.ordersSubject.value;
+  }
+
+  private genId(prefix: string) {
+    return `${prefix}_${Math.random().toString(16).slice(2)}_${Date.now()}`;
+  }
+
+  hasOverlap(candidate: WorkOrderDocument): boolean {
+    const startA = new Date(candidate.data.startDate);
+    const endA = new Date(candidate.data.endDate);
+
+    return this.ordersSubject.value.some(existing => {
+      if (existing.data.workCenterId !== candidate.data.workCenterId) return false;
+      if (existing.docId === candidate.docId) return false;
+
+      const startB = new Date(existing.data.startDate);
+      const endB = new Date(existing.data.endDate);
+
+      return startA < endB && endA > startB;
+    });
+  }
+
+  upsertOrder(order: WorkOrderDocument): { ok: true } | { ok: false; error: string } {
+    const start = new Date(order.data.startDate);
+    const end = new Date(order.data.endDate);
+
+    if (!(start < end)) {
+      return { ok: false, error: 'Start date must be before end date.' };
+    }
+
+    if (this.hasOverlap(order)) {
+      return {
+        ok: false,
+        error: 'This work order overlaps another order on the same work center.',
+      };
+    }
+
+    const existing = this.ordersSubject.value;
+    const idx = existing.findIndex(o => o.docId === order.docId);
+
+    if (idx >= 0) {
+      const copy = [...existing];
+      copy[idx] = order;
+      this.ordersSubject.next(copy);
+      return { ok: true };
+    }
+
+    this.ordersSubject.next([
+      {
+        ...order,
+        docId: order.docId || this.genId('wo'),
+        docType: 'workOrder',
+      },
+      ...existing,
+    ]);
+
+    return { ok: true };
+  }
+  
+generateOrders(count: number) {
+  const centers = this.workCenters.map(w => w.docId);
+  const statuses = ['open', 'in-progress', 'complete', 'blocked'] as const;
+
+  const newOrders: WorkOrderDocument[] = [];
+
+  // Start from the latest end date already present on each center
+  const nextAvailableByCenter: Record<string, Date> = {};
+
+  for (const centerId of centers) {
+    const existingOrdersForCenter = this.ordersSubject.value.filter(
+      order => order.data.workCenterId === centerId
+    );
+
+    if (existingOrdersForCenter.length === 0) {
+      const base = new Date();
+      base.setHours(0, 0, 0, 0);
+      nextAvailableByCenter[centerId] = base;
+    } else {
+      let latestEnd = new Date(existingOrdersForCenter[0].data.endDate);
+      latestEnd.setHours(0, 0, 0, 0);
+
+      for (const order of existingOrdersForCenter) {
+        const end = new Date(order.data.endDate);
+        end.setHours(0, 0, 0, 0);
+        if (end > latestEnd) {
+          latestEnd = end;
+        }
+      }
+
+      nextAvailableByCenter[centerId] = latestEnd;
+    }
+  }
+
+  for (let i = 0; i < count; i++) {
+    const centerId = centers[i % centers.length];
+
+    const start = new Date(nextAvailableByCenter[centerId]);
+
+    // small gap after previous order: 1 to 2 days
+    const gapDays = Math.floor(Math.random() * 2) + 1;
+    start.setDate(start.getDate() + gapDays);
+
+    // duration: 1 to 7 days
+    const duration = Math.floor(Math.random() * 7) + 1;
+
+    const end = new Date(start);
+    end.setDate(end.getDate() + duration);
+
+    newOrders.push({
+      docId: this.genId('wo'),
+      docType: 'workOrder',
+      data: {
+        name: `Auto Order ${i + 1}`,
+        workCenterId: centerId,
+        status: statuses[Math.floor(Math.random() * statuses.length)],
+        startDate: start.toISOString().slice(0, 10),
+        endDate: end.toISOString().slice(0, 10),
+      },
+    });
+
+    // advance next available date for this center
+    nextAvailableByCenter[centerId] = new Date(end);
+  }
+
+  this.ordersSubject.next([...this.ordersSubject.value, ...newOrders]);
+}
+  deleteOrder(id: string) {
+    this.ordersSubject.next(this.ordersSubject.value.filter(o => o.docId !== id));
+  }
+
+  resetOrders() {
+  this.ordersSubject.next([...this.initialOrders]);
+}
+
+}

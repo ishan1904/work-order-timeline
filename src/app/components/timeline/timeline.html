@@ -1,0 +1,72 @@
+<div
+  class="timeline-shell"
+  [attr.data-zoom]="zoom"
+  [style.--dayWidth.px]="pxPerDay"
+  (click)="closeMenu()"
+>
+  <!-- LEFT SIDE -->
+  <div class="sidebar">
+    <div class="sidebar-top">
+      <h3>Work Centers</h3>
+    </div>
+
+    <div class="sidebar-row" *ngFor="let wc of workCenters">
+      {{ wc.data.name }}
+    </div>
+  </div>
+
+  <!-- RIGHT SIDE -->
+  <div class="timeline">
+    <div class="toolbar">
+      <button (click)="generate1000()">Generate 1000 Orders</button>
+      <button (click)="resetOrders()">Reset Orders</button>
+      <button (click)="setZoom('day')" [class.active]="zoom === 'day'">Day</button>
+      <button (click)="setZoom('week')" [class.active]="zoom === 'week'">Week</button>
+      <button (click)="setZoom('month')" [class.active]="zoom === 'month'">Month</button>
+    </div>
+
+    <div class="header">
+      <div class="day" *ngFor="let d of days">
+        {{ headerLabel(d) }}
+      </div>
+    </div>
+
+    <div class="today-line" [style.left.px]="todayLeftPx()"></div>
+
+    <div class="row" *ngFor="let wc of workCenters">
+      <div class="row-grid">
+        <div
+          class="cell"
+          *ngFor="let d of days"
+          (click)="openCreate(wc.docId, iso(d))"
+        ></div>
+
+        <div
+          class="bar"
+          [class]="statusClass(order)"
+          *ngFor="let order of ordersForWorkCenter(wc.docId)"
+          [ngStyle]="barStyle(order)"
+          title="{{ order.data.name }} ({{ order.data.startDate }} → {{ order.data.endDate }})"
+        >
+          <span class="bar-label" (click)="openEdit(order)">
+            {{ order.data.name }}
+          </span>
+
+          <button class="menu-btn" (click)="toggleMenu(order.docId, $event)">⋯</button>
+
+          <div class="menu" *ngIf="activeMenuOrderId === order.docId">
+            <button (click)="openEditFromMenu(order, $event)">Edit</button>
+            <button class="danger" (click)="deleteOrder(order, $event)">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <app-order-panel
+    *ngIf="panelOpen && editingOrder"
+    [order]="editingOrder"
+    [workCenters]="workCenters"
+    (close)="closePanel()"
+  ></app-order-panel>
+</div>
