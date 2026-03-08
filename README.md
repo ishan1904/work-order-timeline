@@ -1,48 +1,54 @@
 # Work Order Timeline Dashboard
 
-A frontend scheduling dashboard built with **Angular** for managing production work orders across multiple work centers.  
-The application visualizes orders on an interactive timeline and allows users to create, edit, and delete work orders while preventing scheduling conflicts.
+An interactive **manufacturing scheduling dashboard** built with **Angular 17**.  
+The application visualizes production work orders across multiple work centers on a timeline and allows users to create, edit, and manage schedules while preventing conflicts.
+
+This project was built as part of a **Frontend Technical Assessment**.
 
 ---
 
 # Features
 
-- Interactive **timeline-based scheduling**
+- Interactive **timeline-based scheduling interface**
 - **Day / Week / Month zoom levels**
 - **Create, edit, and delete work orders**
-- **Overlap validation** for orders within the same work center
-- **Color-coded order status**
+- **Overlap validation** to prevent conflicting schedules
+- **Color-coded order status indicators**
+- **Three-dot action menu** for editing and deleting orders
 - **Sticky work center sidebar**
-- **Horizontal timeline scrolling**
-- **Responsive layout**
-- **Reactive forms for order management**
+- **Horizontally scrollable timeline grid**
+- **Slide-out order edit panel**
+- **Reactive form validation**
+- **Current day indicator**
 
 ---
 
 # Tech Stack
 
-- **Angular**
-- **TypeScript**
+- **Angular 17 (Standalone Components)**
+- **TypeScript (strict mode)**
+- **SCSS**
 - **Reactive Forms**
-- **RxJS**
+- **ng-select**
+- **ng-bootstrap Datepicker**
 - **CSS Grid + Flexbox**
 
 ---
 
-# How It Works
+# Timeline Rendering Logic
 
 Each work center is displayed as a row in the timeline.
 
-Work orders are rendered as bars whose position and width are calculated based on their start and end dates.
+Work orders are rendered as bars whose **position and width are dynamically calculated** from their start and end dates.
 
-```
+```ts
 left = (startDate - timelineStart) * pixelsPerDay
 width = (endDate - startDate) * pixelsPerDay
 ```
 
-This allows the timeline to dynamically scale depending on the selected zoom level.
+This allows the timeline to automatically adapt when switching between zoom levels.
 
-The application supports:
+Supported views:
 
 - Day view
 - Week view
@@ -52,9 +58,14 @@ The application supports:
 
 # Overlap Validation
 
-When creating or editing an order, the application checks if another order already exists on the same work center during the same time range.
+When creating or editing a work order, the application checks whether another order exists on the same work center within the same date range.
 
-If an overlap occurs, the operation is rejected and an error message is displayed.
+If an overlap is detected:
+
+- The order is not saved
+- A validation error message is shown
+
+This ensures **no conflicting schedules occur on the same work center**.
 
 ---
 
@@ -85,19 +96,19 @@ models/
 
 # Installation
 
-Clone the repository and install dependencies.
+Clone the repository and install dependencies:
 
 ```bash
 npm install
 ```
 
-Start the development server.
+Start the development server:
 
 ```bash
 ng serve
 ```
 
-Open the application in your browser.
+Open the application in your browser:
 
 ```
 http://localhost:4200
@@ -109,25 +120,34 @@ http://localhost:4200
 
 Users can:
 
-- Click a **timeline cell** to create a new work order
-- Click an **existing order bar** to edit it
-- Change **zoom levels** using the timeline controls
-- Delete orders using the edit panel
+- Click an **empty timeline cell** to create a new work order
+- Click the **three-dot menu on a bar** to edit or delete an order
+- Change **zoom levels (Day / Week / Month)**
+- Scroll horizontally to view different date ranges
+- Manage work orders through the **slide-out order panel**
 
 ---
 
 # Demo
 
-A Loom video demonstration accompanies this submission and showcases:
+A Loom video demo accompanies this submission and demonstrates:
 
 - Timeline navigation
-- Order creation
-- Editing and deleting orders
-- Overlap validation
-- Zoom functionality
+- Zoom levels
+- Creating work orders
+- Editing work orders
+- Deleting work orders
+- Overlap validation behavior
+
+---
+
+# AI Assistance
+
+AI tools were used to assist with debugging, layout refinement, and implementation ideas.  
+All architectural decisions and final implementation were reviewed and adapted manually.
 
 ---
 
 # Author
 
-Ishan Rajvi
+**Ishan Rajvi**
