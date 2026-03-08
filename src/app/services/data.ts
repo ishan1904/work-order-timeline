@@ -6,6 +6,9 @@ import { WorkCenterDocument, WorkOrderDocument } from '../models/docs';
   providedIn: 'root',
 })
 export class DataService {
+
+  private storageKey = 'work-order-timeline-orders';
+
   private workCenters: WorkCenterDocument[] = [
     { docId: 'wc1', docType: 'workCenter', data: { name: 'Extrusion Line A' } },
     { docId: 'wc2', docType: 'workCenter', data: { name: 'CNC Machine 1' } },
@@ -105,9 +108,12 @@ export class DataService {
 },
 ];
 
-private ordersSubject = new BehaviorSubject<WorkOrderDocument[]>([...this.initialOrders]);
+private ordersSubject = new BehaviorSubject<WorkOrderDocument[]>(
+  this.loadOrdersFromStorage() ?? [...this.initialOrders]
+);
 
 workOrders$ = this.ordersSubject.asObservable();
+
 
   getWorkCenters(): WorkCenterDocument[] {
     return this.workCenters;
@@ -122,18 +128,33 @@ workOrders$ = this.ordersSubject.asObservable();
   }
 
   hasOverlap(candidate: WorkOrderDocument): boolean {
-    const startA = new Date(candidate.data.startDate);
-    const endA = new Date(candidate.data.endDate);
+    const startA = this.parseDate(candidate.data.startDate);
+    const endA = this.parseDate(candidate.data.endDate);
 
     return this.ordersSubject.value.some(existing => {
       if (existing.data.workCenterId !== candidate.data.workCenterId) return false;
       if (existing.docId === candidate.docId) return false;
 
-      const startB = new Date(existing.data.startDate);
-      const endB = new Date(existing.data.endDate);
+      const startB = this.parseDate(existing.data.startDate);
+      const endB = this.parseDate(existing.data.endDate);
 
       return startA < endB && endA > startB;
     });
+  }
+
+  private loadOrdersFromStorage(): WorkOrderDocument[] | null {
+    const raw = localStorage.getItem(this.storageKey);
+    if (!raw) return null;
+
+    try {
+      return JSON.parse(raw) as WorkOrderDocument[];
+    } catch {
+      return null;
+    }
+  }
+
+  private saveOrdersToStorage(orders: WorkOrderDocument[]) {
+    localStorage.setItem(this.storageKey, JSON.stringify(orders));
   }
 
   upsertOrder(order: WorkOrderDocument): { ok: true } | { ok: false; error: string } {
@@ -158,17 +179,21 @@ workOrders$ = this.ordersSubject.asObservable();
       const copy = [...existing];
       copy[idx] = order;
       this.ordersSubject.next(copy);
+      this.saveOrdersToStorage(copy);
       return { ok: true };
     }
 
-    this.ordersSubject.next([
+    const nextOrders: WorkOrderDocument[] = [
       {
         ...order,
         docId: order.docId || this.genId('wo'),
-        docType: 'workOrder',
+        docType: 'workOrder' as const,
       },
       ...existing,
-    ]);
+    ];
+
+    this.ordersSubject.next(nextOrders);
+    this.saveOrdersToStorage(nextOrders);
 
     return { ok: true };
   }
@@ -238,14 +263,25 @@ generateOrders(count: number) {
     nextAvailableByCenter[centerId] = new Date(end);
   }
 
-  this.ordersSubject.next([...this.ordersSubject.value, ...newOrders]);
+  const nextOrders = [...this.ordersSubject.value, ...newOrders];
+  this.ordersSubject.next(nextOrders);
+  this.saveOrdersToStorage(nextOrders);
 }
   deleteOrder(id: string) {
-    this.ordersSubject.next(this.ordersSubject.value.filter(o => o.docId !== id));
-  }
+  const nextOrders = this.ordersSubject.value.filter(o => o.docId !== id);
+  this.ordersSubject.next(nextOrders);
+  this.saveOrdersToStorage(nextOrders);
+}
 
   resetOrders() {
-  this.ordersSubject.next([...this.initialOrders]);
+  const nextOrders = [...this.initialOrders];
+  this.ordersSubject.next(nextOrders);
+  this.saveOrdersToStorage(nextOrders);  
+}
+
+private parseDate(iso: string): Date {
+  const [year, month, day] = iso.split('-').map(Number);
+  return new Date(year, month - 1, day);
 }
 
 }

@@ -61,11 +61,6 @@ input, select {
   font-size: 14px;
 }
 
-.dates {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
 
 .error {
   color: #b91c1c;
@@ -112,7 +107,50 @@ button {
   color: #b91c1c;
 }
 
+.dates {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.date-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.panel {
+  overflow: hidden;
+}
+
+.panel-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: visible;
+}
+
+.date-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .date-input {
-  cursor: pointer;
+  width: 100%;
+  padding-right: 44px;
   background: #ffffff;
+}
+
+.calendar-btn {
+  position: absolute;
+  right: 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  z-index: 2;
 }

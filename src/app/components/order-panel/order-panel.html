@@ -13,63 +13,57 @@
     </label>
 
     <label>
-    Work Center *
-    <ng-select
+      Work Center *
+      <ng-select
         [items]="workCenters"
         bindLabel="data.name"
         bindValue="docId"
         placeholder="Select work center"
         formControlName="workCenterId"
         [clearable]="false"
-    >
-    </ng-select>
+      >
+      </ng-select>
     </label>
 
     <label>
-    Status *
-    <ng-select
+      Status *
+      <ng-select
         [items]="[
-        { label: 'Open', value: 'open' },
-        { label: 'In Progress', value: 'in-progress' },
-        { label: 'Complete', value: 'complete' },
-        { label: 'Blocked', value: 'blocked' }
+          { label: 'Open', value: 'open' },
+          { label: 'In Progress', value: 'in-progress' },
+          { label: 'Complete', value: 'complete' },
+          { label: 'Blocked', value: 'blocked' }
         ]"
         bindLabel="label"
         bindValue="value"
         placeholder="Select status"
         formControlName="status"
         [clearable]="false"
-    >
-    </ng-select>
+      >
+      </ng-select>
     </label>
 
     <div class="dates">
-      <label>
-        Start *
-        <input
-          class="date-input"
-          placeholder="yyyy-mm-dd"
-          ngbDatepicker
-          #startDp="ngbDatepicker"
-          formControlName="startDate"
-          readonly
-          (click)="startDp.toggle()"
-        />
-      </label>
+      <div class="date-group">
+      <label>Start *</label>
 
-      <label>
-        End *
-        <input
-          class="date-input"
-          placeholder="yyyy-mm-dd"
-          ngbDatepicker
-          #endDp="ngbDatepicker"
-          formControlName="endDate"
-          readonly
-          (click)="endDp.toggle()"
-        />
-      </label>
+      <ngb-datepicker
+        formControlName="startDate"
+        [displayMonths]="1"
+        navigation="select"
+      ></ngb-datepicker>
     </div>
+
+  <div class="date-group">
+  <label>End *</label>
+
+  <ngb-datepicker
+    formControlName="endDate"
+    [displayMonths]="1"
+    navigation="select"
+  ></ngb-datepicker>
+</div>
+</div>
 
     <div class="error" *ngIf="errorMsg">{{ errorMsg }}</div>
   </div>

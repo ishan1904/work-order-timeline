@@ -19,7 +19,7 @@ export class Timeline {
 
   zoom: ZoomLevel = 'day';
   pxPerDay = 60;
-  totalDays = 30;
+  totalDays = 60;
 
   panelOpen = false;
   editingOrder: WorkOrderDocument | null = null;
@@ -36,29 +36,29 @@ export class Timeline {
   });
 
     const start = new Date();
-    start.setDate(start.getDate() - 14);
+    start.setDate(start.getDate() - 7);
     start.setHours(0, 0, 0, 0);
     this.timelineStart = start;
   }
 
   setZoom(level: ZoomLevel) {
-    this.zoom = level;
+  this.zoom = level;
 
-    if (level === 'day') {
-      this.pxPerDay = 60;
-      this.totalDays = 30;
-    }
-
-    if (level === 'week') {
-      this.pxPerDay = 20;
-      this.totalDays = 90;
-    }
-
-    if (level === 'month') {
-      this.pxPerDay = 6;
-      this.totalDays = 365;
-    }
+  if (level === 'day') {
+    this.pxPerDay = 60;
+    this.totalDays = 60; 
   }
+
+  if (level === 'week') {
+    this.pxPerDay = 18;
+    this.totalDays = 120; 
+  }
+
+  if (level === 'month') {
+    this.pxPerDay = 6;
+    this.totalDays = 365; 
+  }
+}
 
   iso(d: Date): string {
     const yyyy = d.getFullYear();
@@ -156,15 +156,22 @@ openEditFromMenu(order: WorkOrderDocument, event: MouseEvent) {
   }
 
   toDate(iso: string): Date {
-    const d = new Date(iso);
-    d.setHours(0, 0, 0, 0);
-    return d;
-  }
+  const [year, month, day] = iso.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
 
   diffDays(d: Date): number {
-    const msPerDay = 1000 * 60 * 60 * 24;
-    return Math.floor((d.getTime() - this.timelineStart.getTime()) / msPerDay);
-  }
+      const msPerDay = 1000 * 60 * 60 * 24;
+
+      const utcA = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+      const utcB = Date.UTC(
+        this.timelineStart.getFullYear(),
+        this.timelineStart.getMonth(),
+        this.timelineStart.getDate()
+      );
+
+      return Math.round((utcA - utcB) / msPerDay);
+    }
 
   barStyle(order: WorkOrderDocument) {
     const start = this.toDate(order.data.startDate);
@@ -174,8 +181,8 @@ openEditFromMenu(order: WorkOrderDocument, event: MouseEvent) {
     const rightDays = this.diffDays(end);
 
     const leftPx = leftDays * this.pxPerDay;
-    const widthPx = Math.max(10, (rightDays - leftDays) * this.pxPerDay);
-
+    const widthPx = Math.max(this.pxPerDay, (rightDays - leftDays + 1) * this.pxPerDay);
+    
     return {
       left: `${leftPx}px`,
       width: `${widthPx}px`,
