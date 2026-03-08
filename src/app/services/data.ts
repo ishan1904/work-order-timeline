@@ -106,6 +106,52 @@ export class DataService {
     endDate: '2026-03-10',
   },
 },
+
+{
+  docId: 'wo-009',
+  docType: 'workOrder',
+  data: {
+    name: 'Batch Mixing Run',
+    workCenterId: 'wc2',
+    status: 'open',
+    startDate: '2026-03-10',
+    endDate: '2026-03-13',
+  },
+},
+{
+  docId: 'wo-010',
+  docType: 'workOrder',
+  data: {
+    name: 'Final Assembly Prep',
+    workCenterId: 'wc3',
+    status: 'in-progress',
+    startDate: '2026-03-14',
+    endDate: '2026-03-18',
+  },
+},
+{
+  docId: 'wo-011',
+  docType: 'workOrder',
+  data: {
+    name: 'Inspection Cycle B',
+    workCenterId: 'wc4',
+    status: 'complete',
+    startDate: '2026-03-19',
+    endDate: '2026-03-21',
+  },
+},
+{
+  docId: 'wo-012',
+  docType: 'workOrder',
+  data: {
+    name: 'Packaging Line Changeover',
+    workCenterId: 'wc5',
+    status: 'blocked',
+    startDate: '2026-03-22',
+    endDate: '2026-03-26',
+  },
+},
+
 ];
 
 private ordersSubject = new BehaviorSubject<WorkOrderDocument[]>(
